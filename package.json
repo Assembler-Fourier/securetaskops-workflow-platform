@@ -1,0 +1,26 @@
+{
+  "name": "securetaskops-workflow-platform",
+  "version": "0.1.0",
+  "description": "Security-aware task, incident and release-readiness workflow API for portfolio review.",
+  "type": "module",
+  "private": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/domain.js && node --check src/sample-data.js && node --check src/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "nodejs",
+    "workflow",
+    "api",
+    "testing",
+    "docker",
+    "security-aware-development"
+  ],
+  "author": "Uzair Waseem",
+  "license": "MIT"
+}
