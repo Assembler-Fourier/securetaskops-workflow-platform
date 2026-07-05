@@ -1,22 +1,26 @@
 # SecureTaskOps Workflow Platform
 
-Security-aware task, incident, and release-readiness workflow API built as a focused flagship portfolio project for full-stack/backend software engineering roles.
+Security-aware workflow dashboard and API for tracking release readiness, blockers, risk signals and security-sensitive work.
 
-> Honest status: this is a current portfolio build, not a production SaaS claim. It is designed to be runnable, testable, documented, and easy for a recruiter or engineering manager to review.
+Live app: https://securetaskops-workflow-platform.vercel.app/
+
+> Status: deployed product demo. It includes a working dashboard, API routes, task creation, filtering, release-readiness summary, tests, Docker support and CI. Demo data may reset when the serverless runtime refreshes.
 
 ![SecureTaskOps workflow preview](docs/workflow-preview.svg)
 
 ## Problem
 
-Small teams often track tasks, incidents, blockers, and release readiness across scattered notes or manual dashboards. That makes it harder to see which work is blocked, which changes are security-sensitive, and whether a release needs attention before shipping.
+Small teams often track tasks, incidents, blockers and release readiness across scattered notes or manual dashboards. That makes it harder to see which work is blocked, which changes are security-sensitive, and whether a release needs attention before shipping.
 
 ## Solution
 
-SecureTaskOps exposes a small Node.js API that models workflow items, scores delivery/security risk, filters tasks, and summarizes release readiness. The goal is to show practical backend structure, testable business logic, Docker setup, CI, and clear documentation.
+SecureTaskOps exposes a dashboard and Node.js API that model workflow items, score delivery/security risk, filter tasks, create new items, and summarize release readiness. The goal is to make release risk visible before work ships.
 
 ## Tech Stack
 
 - Node.js native HTTP server
+- Vercel serverless API routes
+- Static dashboard UI
 - JavaScript modules
 - Node test runner
 - Docker and Docker Compose
@@ -24,29 +28,32 @@ SecureTaskOps exposes a small Node.js API that models workflow items, scores del
 
 ## Features
 
-- `GET /health` service health check
+- Browser dashboard for release signal, task queue, filters and item creation
+- `GET /health` local health check
+- `GET /api/health` deployed health check
 - `GET /api/tasks` task list with `status`, `owner`, and `severity` filters
 - `POST /api/tasks` workflow item creation with validation
 - `GET /api/release-readiness` release summary and status signal
-- Risk scoring based on severity, blocked work, due date, and security-sensitive changes
-- Tests for validation, filtering, risk scoring, and release readiness
-- Dockerfile, Docker Compose, `.env.example`, CI workflow, changelog, and security notes
+- Risk scoring based on severity, blocked work, due date and security-sensitive changes
+- Tests for validation, filtering, risk scoring and release readiness
+- Dockerfile, Docker Compose, `.env.example`, CI workflow, changelog and security notes
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-  Client["Recruiter / API client"] --> Server["Node.js HTTP server"]
-  Server --> Routes["Route handlers"]
+  Client["Dashboard / API client"] --> Routes["Node.js HTTP server or Vercel API functions"]
   Routes --> Domain["Domain logic: validation, risk scoring, release summary"]
-  Domain --> Data["In-memory sample data"]
+  Domain --> Data["Runtime demo store seeded from sample data"]
   Domain --> Tests["Node test runner"]
 ```
 
 Main modules:
 
-- `src/server.js` handles HTTP routing and JSON responses.
-- `src/domain.js` contains validation, risk scoring, filtering, and release summary logic.
+- `public/index.html`, `public/app.css`, and `public/app.js` provide the dashboard.
+- `api/*.js` provides Vercel serverless endpoints.
+- `src/server.js` handles local HTTP routing, JSON responses and static dashboard files.
+- `src/domain.js` contains validation, risk scoring, filtering and release summary logic.
 - `src/sample-data.js` provides deterministic sample workflow items.
 - `test/domain.test.js` covers core logic and edge cases.
 
@@ -60,7 +67,11 @@ npm test
 npm start
 ```
 
-The API runs on `http://localhost:3000` by default.
+Open the dashboard at:
+
+```bash
+http://localhost:3000
+```
 
 ## API Examples
 
@@ -68,6 +79,7 @@ Health check:
 
 ```bash
 curl http://localhost:3000/health
+curl http://localhost:3000/api/health
 ```
 
 List high-severity tasks:
@@ -107,7 +119,7 @@ Covered:
 
 Not covered yet:
 
-- End-to-end HTTP route tests
+- Browser UI tests
 - Persistent database integration
 - Authentication and role-based authorization
 
@@ -117,7 +129,7 @@ Not covered yet:
 docker compose up --build
 ```
 
-Then open `http://localhost:3000/health`.
+Then open `http://localhost:3000`.
 
 ## CI/CD
 
@@ -127,21 +139,20 @@ The repository includes GitHub Actions for syntax checks and tests on pushes and
 
 - Request JSON is validated before workflow items are created.
 - `.env.example` documents configuration without committing secrets.
-- This prototype does not yet include authentication, authorization, rate limiting, persistent storage, or audit logging.
+- The deployed demo does not yet include authentication, authorization, rate limiting, persistent storage, or audit logging.
 - Future production hardening should add auth, RBAC, request size limits, schema validation, database migrations, structured logs, and deployment secrets management.
 
 ## Tradeoffs
 
-- Uses in-memory sample data to keep reviewer setup fast.
-- Uses Node's native HTTP server to avoid hiding domain logic behind framework boilerplate.
-- Keeps the scoring model explainable instead of pretending it is a complete risk engine.
+- Uses runtime demo data to keep setup fast and public.
+- Uses Node's native HTTP server to keep domain logic visible.
+- Keeps the scoring model explainable instead of pretending it is a complete compliance engine.
 
 ## Known Limitations
 
+- Demo data may reset when the serverless instance refreshes.
 - No database persistence yet.
 - No user authentication yet.
-- No live hosted API yet.
-- No frontend dashboard yet.
 - Risk scoring is a simple transparent heuristic, not a compliance model.
 
 ## Future Improvements
@@ -150,9 +161,9 @@ The repository includes GitHub Actions for syntax checks and tests on pushes and
 - Add Fastify or Express route layer with schema validation.
 - Add authentication and role-based access control.
 - Add HTTP route tests and coverage reporting.
-- Add a Next.js dashboard for release and incident review.
-- Deploy a live demo with documented environment configuration.
+- Add browser smoke tests for the dashboard.
+- Add audit log export and role-specific views.
 
 ## What This Demonstrates
 
-This project demonstrates backend API design, modular domain logic, validation, testable risk scoring, release-readiness modeling, Docker setup, CI workflow, security-aware thinking, and honest technical documentation.
+This project demonstrates backend API design, a deployed dashboard, modular domain logic, validation, testable risk scoring, release-readiness modeling, Docker setup, CI workflow, security-aware thinking, and honest technical documentation.

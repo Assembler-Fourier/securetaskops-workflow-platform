@@ -1,6 +1,6 @@
 # Security Policy
 
-This repository is a portfolio prototype. Security-sensitive claims are kept intentionally modest.
+SecureTaskOps is a public product demo. Security-sensitive claims are kept intentionally modest.
 
 ## Current Security Practices
 
@@ -21,6 +21,6 @@ This repository is a portfolio prototype. Security-sensitive claims are kept int
 
 ## Reporting Issues
 
-If you find an issue, please open a GitHub issue or contact Uzair Waseem through the portfolio website:
+If you find an issue, please open a GitHub issue or contact Uzair Waseem through the personal website:
 
 https://uzairwaseem.com

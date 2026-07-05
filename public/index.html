@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="SecureTaskOps is a live workflow dashboard for release readiness, blockers, risk signals and security-sensitive work."
+    />
+    <title>SecureTaskOps Workflow Platform</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <nav class="topbar" aria-label="Primary">
+          <a class="brand" href="/">
+            <span class="mark" aria-hidden="true"></span>
+            <span>SecureTaskOps</span>
+          </a>
+          <div class="nav-actions">
+            <a href="https://github.com/Assembler-Fourier/securetaskops-workflow-platform" target="_blank" rel="noreferrer">GitHub</a>
+            <a href="#create">Add Work Item</a>
+          </div>
+        </nav>
+
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Release readiness and security-aware workflow control</p>
+            <h1>Track blockers, risk and delivery confidence before release.</h1>
+            <p>
+              SecureTaskOps turns workflow items into a live release signal using API-backed task data,
+              risk scoring, filters and a review-ready dashboard.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#dashboard">View Dashboard</a>
+              <a class="button secondary" href="/api/tasks">Open API</a>
+            </div>
+          </div>
+
+          <aside class="signal-panel" aria-label="Live release signal">
+            <div class="panel-header">
+              <span>Release Signal</span>
+              <strong id="releaseStatus">Loading</strong>
+            </div>
+            <div class="risk-orbit" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <dl class="signal-stats">
+              <div><dt>Average risk</dt><dd id="averageRisk">--</dd></div>
+              <div><dt>Blocked</dt><dd id="blockedCount">--</dd></div>
+              <div><dt>High risk</dt><dd id="highRiskCount">--</dd></div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+
+      <section id="dashboard" class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Live dashboard</p>
+            <h2>Current workflow queue</h2>
+          </div>
+          <div class="filters" aria-label="Task filters">
+            <label>
+              Status
+              <select id="statusFilter">
+                <option value="">All</option>
+                <option value="todo">Todo</option>
+                <option value="in_progress">In progress</option>
+                <option value="blocked">Blocked</option>
+                <option value="review">Review</option>
+                <option value="done">Done</option>
+              </select>
+            </label>
+            <label>
+              Severity
+              <select id="severityFilter">
+                <option value="">All</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="summary-grid" id="summaryCards" aria-live="polite"></div>
+        <div class="task-grid" id="taskGrid" aria-live="polite"></div>
+      </section>
+
+      <section id="create" class="section create-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Create workflow item</p>
+            <h2>Add a task, incident or release blocker</h2>
+          </div>
+          <p class="note">Submitted items are stored in the live demo runtime and may reset when the serverless instance refreshes.</p>
+        </div>
+
+        <form id="taskForm" class="task-form">
+          <label>
+            Title
+            <input name="title" required maxlength="120" value="Review security-sensitive deployment change" />
+          </label>
+          <label>
+            Owner
+            <input name="owner" required maxlength="80" value="Uzair" />
+          </label>
+          <label>
+            Status
+            <select name="status">
+              <option value="todo">Todo</option>
+              <option value="in_progress">In progress</option>
+              <option value="blocked">Blocked</option>
+              <option value="review" selected>Review</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+          <label>
+            Severity
+            <select name="severity">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </label>
+          <label>
+            Due date
+            <input name="dueDate" type="date" required />
+          </label>
+          <label>
+            Tags
+            <input name="tags" value="release, security" />
+          </label>
+          <label class="checkbox">
+            <input name="securitySensitive" type="checkbox" checked />
+            Security-sensitive change
+          </label>
+          <button class="button primary" type="submit">Create item</button>
+        </form>
+        <p class="form-status" id="formStatus" role="status"></p>
+      </section>
+
+      <section class="section api-section">
+        <div>
+          <p class="eyebrow">API surface</p>
+          <h2>Endpoints behind the dashboard</h2>
+        </div>
+        <div class="endpoint-grid">
+          <a href="/api/health"><code>GET /api/health</code><span>Service health</span></a>
+          <a href="/api/tasks"><code>GET /api/tasks</code><span>Workflow item list and filters</span></a>
+          <a href="/api/release-readiness"><code>GET /api/release-readiness</code><span>Release signal summary</span></a>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
