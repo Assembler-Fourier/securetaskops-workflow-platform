@@ -35,7 +35,7 @@ SecureTaskOps exposes a dashboard and Node.js API that model workflow items, sco
 - `POST /api/tasks` workflow item creation with validation
 - `GET /api/release-readiness` release summary and status signal
 - Risk scoring based on severity, blocked work, due date and security-sensitive changes
-- Tests for validation, filtering, risk scoring and release readiness
+- Domain and HTTP tests for validation, date boundaries, filtering, risk scoring, release readiness, response contracts and browser headers
 - Dockerfile, Docker Compose, `.env.example`, CI workflow, changelog and security notes
 
 ## Architecture
@@ -56,6 +56,7 @@ Main modules:
 - `src/domain.js` contains validation, risk scoring, filtering and release summary logic.
 - `src/sample-data.js` provides deterministic sample workflow items.
 - `test/domain.test.js` covers core logic and edge cases.
+- `test/server.test.js` exercises health, filtering, item creation, malformed JSON and static response headers over HTTP.
 
 ## Local Setup
 
@@ -112,14 +113,17 @@ npm test
 Covered:
 
 - Required-field validation
+- Strict date-only validation and reference-clock behavior
 - Risk scoring boundaries
 - Blocked and security-sensitive risk reasons
 - Query-style filtering
 - Release-readiness summary logic
+- HTTP response contracts and error handling
+- Restrictive static browser headers
 
 Not covered yet:
 
-- Browser UI tests
+- Browser interaction tests in this repository; cross-project browser/API checks live in QA Automation Lab
 - Persistent database integration
 - Authentication and role-based authorization
 
@@ -140,7 +144,9 @@ The repository includes GitHub Actions for syntax checks and tests on pushes and
 - Request JSON is validated before workflow items are created.
 - `.env.example` documents configuration without committing secrets.
 - The deployed demo does not yet include authentication, authorization, rate limiting, persistent storage, or audit logging.
-- Future production hardening should add auth, RBAC, request size limits, schema validation, database migrations, structured logs, and deployment secrets management.
+- Request bodies are capped at 64 KB and malformed JSON returns a bounded validation error without stack details.
+- Static responses use a restrictive Content Security Policy; API responses are non-cacheable and use `nosniff` and no-referrer headers.
+- Future production hardening should add auth, RBAC, database migrations, structured logs, rate limiting and deployment secrets management.
 
 ## Tradeoffs
 

@@ -8,6 +8,9 @@ SecureTaskOps is a public product demo. Security-sensitive claims are kept inten
 - No secrets committed to the repository
 - `.env.example` documents expected configuration
 - Security-sensitive workflow items are surfaced in the risk model
+- Request bodies are limited to 64 KB and malformed JSON receives a bounded validation error
+- Static browser responses use a restrictive Content Security Policy
+- API responses are non-cacheable and include `nosniff` and no-referrer headers
 - Known limitations are documented in the README
 
 ## Not Implemented Yet
@@ -16,7 +19,6 @@ SecureTaskOps is a public product demo. Security-sensitive claims are kept inten
 - Authorization and role-based access
 - Persistent audit logs
 - Rate limiting
-- Request size limits
 - Production secrets management
 
 ## Reporting Issues

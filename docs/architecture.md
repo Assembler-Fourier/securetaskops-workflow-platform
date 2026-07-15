@@ -4,7 +4,7 @@ SecureTaskOps is intentionally small so reviewers can inspect the complete syste
 
 ## Request Flow
 
-1. A client calls `src/server.js`.
+1. A client calls `src/server.js` locally or a handler in `api/` on Vercel.
 2. The server maps the HTTP method and path to a route handler.
 3. Route handlers call domain functions from `src/domain.js`.
 4. Domain logic validates input, calculates risk, filters workflow items, or summarizes release readiness.
@@ -15,7 +15,8 @@ SecureTaskOps is intentionally small so reviewers can inspect the complete syste
 - HTTP concerns stay in `src/server.js`.
 - Business rules stay in `src/domain.js`.
 - Sample data stays in `src/sample-data.js`.
-- Tests exercise the domain layer directly because that is where the important logic lives.
+- Domain tests exercise the business rules directly.
+- HTTP tests exercise route behavior, error envelopes, cache policy and static security headers.
 
 ## Future Database Boundary
 

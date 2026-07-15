@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { URL } from "node:url";
 import { fileURLToPath } from "node:url";
 import { createWorkflowItem, filterItems, summarizeRelease, ValidationError } from "./domain.js";
@@ -49,7 +49,9 @@ export default async function handler(request, response) {
 
 export const server = createServer(handler);
 
-if (process.env.NODE_ENV !== "test") {
+const isDirectExecution = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectExecution) {
   server.listen(port, () => {
     console.log(`SecureTaskOps API running on http://localhost:${port}`);
   });
@@ -70,7 +72,9 @@ function notFound() {
 function send(response, statusCode, body) {
   response.writeHead(statusCode, {
     "content-type": "application/json; charset=utf-8",
-    "cache-control": "no-store"
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "no-referrer"
   });
   response.end(JSON.stringify(body, null, 2));
 }
@@ -81,7 +85,10 @@ async function serveStatic(response, pathname) {
   const contents = await readFile(filePath);
   response.writeHead(200, {
     "content-type": contentType(fileName),
-    "cache-control": fileName.endsWith(".html") ? "no-store" : "public, max-age=3600"
+    "cache-control": fileName.endsWith(".html") ? "no-store" : "public, max-age=3600",
+    "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+    "x-content-type-options": "nosniff",
+    "referrer-policy": "no-referrer"
   });
   response.end(contents);
 }
@@ -98,7 +105,12 @@ function contentType(fileName) {
 
 async function readJson(request) {
   const chunks = [];
-  for await (const chunk of request) chunks.push(chunk);
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > 65_536) throw new ValidationError("Request body must not exceed 64 KB.");
+    chunks.push(chunk);
+  }
   const raw = Buffer.concat(chunks).toString("utf8");
   if (!raw.trim()) return {};
   try {
