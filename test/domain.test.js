@@ -11,6 +11,22 @@ test("createWorkflowItem validates required fields", () => {
   );
 });
 
+test("createWorkflowItem uses the supplied clock for its default due date", () => {
+  const item = createWorkflowItem({ title: "Clocked item", owner: "Uzair", severity: "low" }, now);
+
+  assert.equal(item.dueDate, "2026-07-05");
+  assert.match(item.riskReasons.join(" "), /due within three days/);
+});
+
+test("createWorkflowItem rejects impossible or non-date-only due dates", () => {
+  for (const dueDate of ["2026-02-30", "2026-07-05T10:00:00Z", "not-a-date"]) {
+    assert.throws(
+      () => createWorkflowItem({ title: "Invalid date", owner: "Uzair", dueDate }, now),
+      /valid YYYY-MM-DD date/
+    );
+  }
+});
+
 test("calculateRisk raises risk for blocked security-sensitive work due soon", () => {
   const item = createWorkflowItem(
     {
@@ -68,4 +84,24 @@ test("calculateRisk remains bounded", () => {
   );
 
   assert.equal(risk.score, 100);
+});
+
+test("calculateRisk distinguishes overdue work from the due-soon boundary", () => {
+  const overdue = calculateRisk(
+    { status: "todo", severity: "low", dueDate: "2026-07-04", securitySensitive: false },
+    now
+  );
+  const dueInFourDays = calculateRisk(
+    { status: "todo", severity: "low", dueDate: "2026-07-09", securitySensitive: false },
+    now
+  );
+  const completed = calculateRisk(
+    { status: "done", severity: "low", dueDate: "2026-07-04", securitySensitive: false },
+    now
+  );
+
+  assert.match(overdue.reasons.join(" "), /overdue/);
+  assert.equal(overdue.score, 20);
+  assert.equal(dueInFourDays.score, 10);
+  assert.equal(completed.score, 10);
 });

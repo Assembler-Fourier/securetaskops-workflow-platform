@@ -9,7 +9,7 @@ const allowedStatuses = new Set(["todo", "in_progress", "blocked", "review", "do
 const allowedSeverities = new Set(Object.keys(severityWeights));
 
 export function createWorkflowItem(input, now = new Date()) {
-  const item = normalizeInput(input);
+  const item = normalizeInput(input, now);
   const risk = calculateRisk(item, now);
 
   return {
@@ -69,8 +69,11 @@ export function calculateRisk(item, now = new Date()) {
     reasons.push("security-sensitive change requires extra review");
   }
 
-  const dueSoon = daysUntil(item.dueDate, now) <= 3;
-  if (dueSoon && item.status !== "done") {
+  const dueInDays = daysUntil(item.dueDate, now);
+  if (dueInDays < 0 && item.status !== "done") {
+    score += 10;
+    reasons.push("open item is overdue");
+  } else if (dueInDays <= 3 && item.status !== "done") {
     score += 10;
     reasons.push("open item is due within three days");
   }
@@ -83,7 +86,7 @@ export function calculateRisk(item, now = new Date()) {
   };
 }
 
-function normalizeInput(input) {
+function normalizeInput(input, now) {
   if (!input || typeof input !== "object") {
     throw new ValidationError("Request body must be a JSON object.");
   }
@@ -92,13 +95,13 @@ function normalizeInput(input) {
   const owner = cleanText(input.owner);
   const status = input.status || "todo";
   const severity = input.severity || "medium";
-  const dueDate = input.dueDate || new Date().toISOString().slice(0, 10);
+  const dueDate = input.dueDate || toDateOnly(now);
 
   if (!title) throw new ValidationError("title is required.");
   if (!owner) throw new ValidationError("owner is required.");
   if (!allowedStatuses.has(status)) throw new ValidationError(`status must be one of: ${[...allowedStatuses].join(", ")}.`);
   if (!allowedSeverities.has(severity)) throw new ValidationError(`severity must be one of: ${[...allowedSeverities].join(", ")}.`);
-  if (Number.isNaN(Date.parse(dueDate))) throw new ValidationError("dueDate must be a valid date.");
+  if (!isDateOnly(dueDate)) throw new ValidationError("dueDate must be a valid YYYY-MM-DD date.");
 
   return {
     id: typeof input.id === "string" ? input.id : undefined,
@@ -129,6 +132,16 @@ function daysUntil(dateString, now) {
   const target = new Date(`${dateString}T00:00:00.000Z`);
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   return Math.ceil((target.getTime() - today.getTime()) / 86_400_000);
+}
+
+function isDateOnly(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && toDateOnly(parsed) === value;
+}
+
+function toDateOnly(date) {
+  return date.toISOString().slice(0, 10);
 }
 
 function cleanText(value) {
